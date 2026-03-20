@@ -1,0 +1,42 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16
+    container_name: postgres-nextcloud
+    restart: always
+    environment:
+      POSTGRES_USER:nextcloud
+      POSTGRES_PASSWORD:nextcloud
+      POSTGRES_DB:nextcloud
+    volumes:
+      - nextcloud-db-data:/var/lib/postgresql/data
+    networks:
+      - nextcloud-net
+
+  app:
+    image: nextcloud:latest
+    container_name: nextcloud
+    restart: always
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_DB:nextcloud
+      POSTGRES_USER:nextcloud
+      POSTGRES_PASSWORD:nextcloud
+    volumes:
+      - /var/lib/nextcloud_data:/var/www/html
+      - /run/media/ariel_/Database_Rocky_G:/var/www/html/external
+    networks:
+      - nextcloud-net
+
+volumes:
+  nextcloud-db-data:
+    name: nextcloud-db-data
+
+networks:
+  nextcloud-net:
+    name: nextcloud-net
