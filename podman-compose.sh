@@ -25,6 +25,7 @@ podman run -d \
   -e POSTGRES_USER=nextcloud \
   -e POSTGRES_PASSWORD=nextcloud \
   -e POSTGRES_DB=nextcloud \
+  -v nextcloud-db-data:/var/lib/postgresql/data
   docker.io/library/postgres:16
 
 echo "=== Aguardando banco iniciar ==="
