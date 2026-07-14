@@ -1,0 +1,74 @@
+version: "3.10"
+
+services:
+  db:
+    image: postgres:16.10-alpine
+    container_name: nextcloud-db
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: nextcloud
+      POSTGRES_USER: nextcloud
+      POSTGRES_PASSWORD: nextcloud
+
+    volumes:
+      - nextcloud-db-data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nextcloud"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+    networks:
+      - nextcloud-net
+
+
+  redis:
+    image: redis:7-alpine
+    container_name: nextcloud-redis
+    restart: unless-stopped
+
+    networks:
+      - nextcloud-net
+
+
+  app:
+    image: nextcloud:31-apache
+    container_name: nextcloud
+    restart: unless-stopped
+
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+    ports:
+      - "8080:80"
+
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_DB: nextcloud
+      POSTGRES_USER: nextcloud
+      POSTGRES_PASSWORD: nextcloud
+
+      REDIS_HOST: redis
+
+    volumes:
+      - nextcloud-data:/var/www/html
+
+      # Monte seu HDD aqui
+      - /run/media/ariel_/Database_Rocky_G:/var/www/html/data
+
+    networks:
+      - nextcloud-net
+
+
+volumes:
+  nextcloud-db-data:
+  nextcloud-data:
+
+
+networks:
+  nextcloud-net:
